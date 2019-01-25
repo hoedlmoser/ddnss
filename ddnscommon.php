@@ -119,6 +119,13 @@
 			$ip = $_SERVER['REMOTE_ADDR'];
 		}
 		
+		// what is the type of the IP address, A/IPv4 or AAAA/IPv6?
+		if ( preg_match('/(\d{1,3}\.){3}\d{1,3}/', $ip) ) {
+			$typeIP = 'A';
+		} else {
+			$typeIP = 'AAAA';
+		}
+
 		//Figure out what nameserver we should be talking to for this zone
 		//by checking the SOA record. If this server is not configured to 
 		//allow dynamic updates on this zone, then nothing's going to happen.
@@ -126,7 +133,7 @@
 		
 		//Check to see if we actually need to bother BIND
 		//with any of this. 
-		$currentIP	= exec("dig @$nameserver $zone A +short");
+		$currentIP	= exec("dig @$nameserver $zone $typeIP +short");
 		
 		if ( $ip != $currentIP )
 		{
@@ -136,7 +143,7 @@
 			//Remove the old record if it exists
 			if ( !empty($currentIP) )
 			{
-				$err = khi_ddns_nsupdate("server $nameserver\nkey $zone. $key\nprereq yxdomain $zone.\nupdate delete $zone. A\nsend\n");
+				$err = khi_ddns_nsupdate("server $nameserver\nkey $zone. $key\nprereq yxrrset $zone. $typeIP\nupdate delete $zone. $typeIP\nsend\n");
 				
 				if ( !empty($err) )
 				{						
@@ -147,7 +154,7 @@
 			}
 			
 			//Then add the new record as long as another one doesn't already exist
-			$err = khi_ddns_nsupdate("server $nameserver\nkey $zone. $key\nprereq nxdomain $zone.\nupdate add $zone. 60 A $ip\nsend\n");
+			$err = khi_ddns_nsupdate("server $nameserver\nkey $zone. $key\nprereq nxrrset $zone. $typeIP\nupdate add $zone. 60 $typeIP $ip\nsend\n");
 			
 			if ( !empty($err) )
 			{						

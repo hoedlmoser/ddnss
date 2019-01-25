@@ -44,7 +44,7 @@
 	
 	function verify_ip($data)
 	{
-		if ( preg_match('/(\d{1,3}\.){3}\d{1,3}/', $data) || empty($data) )
+		if ( preg_match('/((\d{1,3}\.){3}\d{1,3}|([\da-fA-F]{1,4}:){1,7}((:[\da-fA-F]{1,4}){1,6}|[\da-fA-F]{1,4}|:))/', $data) || empty($data) )
 		{
 			return true;
 		}

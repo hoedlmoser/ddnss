@@ -177,11 +177,7 @@
 		if ( empty($success) ) {
 			header("HTTP/1.0 400 Bad Request");
 		}
-		echo("<html><head>");
-		echo("<title>$result</title>");
-		echo("</head><body>");
 		echo("$result $message");
-		echo("</body></html>");
 	}
 
 ?>

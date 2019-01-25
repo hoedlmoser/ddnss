@@ -58,7 +58,7 @@
 		//PHP's md5 and base64_encode functions appear to be doing something
 		//differently than OpenSSL's, so if we want them to match, we have to
 		//use OpenSSL's.
-		return exec("echo $tsig | tr [:upper:] [:lower:] | openssl md5 | sed 's/^.*= *//' | openssl base64");
+		return exec("echo $key | tr [:upper:] [:lower:] | openssl md5 | sed 's/^.*= *//' | openssl base64");
 	}
 	
 	

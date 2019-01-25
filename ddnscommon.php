@@ -147,7 +147,7 @@
 			}
 			
 			//Then add the new record as long as another one doesn't already exist
-			$err = khi_ddns_nsupdate("server $nameserver\nkey $zone. $key\nprereq nxdomain $zone.\nupdate add $zone. 300 A $ip\nsend\n");
+			$err = khi_ddns_nsupdate("server $nameserver\nkey $zone. $key\nprereq nxdomain $zone.\nupdate add $zone. 60 A $ip\nsend\n");
 			
 			if ( !empty($err) )
 			{						

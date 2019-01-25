@@ -98,7 +98,7 @@
 					will, then you're on your own. 
 		
 	*/
-	function khi_ddns_process_data($data, $keygen = nil)
+	function khi_ddns_process_data($data, $keygen = null)
 	{	
 		$zone		= escapeshellcmd(strtolower(@$data['zone']));
 		$key		= escapeshellcmd(@$data['key']);
@@ -107,7 +107,7 @@
 		//If a keygen callback was provided, then pass it the 
 		//key for further processing. Otherwise we assume
 		//that a Base64 encoded key has been provided ready to go. 
-		if ( $keygen != nil )
+		if ( $keygen != null )
 		{
 			$key = $keygen($key);
 		}

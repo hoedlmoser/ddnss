@@ -30,7 +30,7 @@
 	
 	function verify_key($data)
 	{
-		if ( preg_match('/(\w{2}:){5}\w{2}/', $data) )
+		if ( preg_match('/([\da-fA-F]{2}:){5}[\da-fA-F]{2}/', $data) )
 		{
 			return true;
 		}

@@ -140,7 +140,7 @@
 				
 				if ( !empty($err) )
 				{						
-					echo("$err");
+					response("Error", "$err");
 					
 					return false; 
 				}
@@ -151,20 +151,38 @@
 			
 			if ( !empty($err) )
 			{						
-				echo("$err");
+				response("Error", "$err");
 				
 				return false; 
 			}			
 			
-			echo "$zone has been set to $ip\n";
+			response("Success", "$zone has been set to $ip.", true);
 		}
 		else
 		{
-			echo("$zone is already set to $ip\n");
+			response("Success", "$zone is already set to $ip.", true);
 			
 			return false;
 		}
 		
 		return true; 
 	}
+
+
+  function response($header, $message, $success)
+  {
+    if ( empty($success) )
+    {
+      header("HTTP/1.0 400 Bad Request");
+    }
+    echo("<html><head>");
+    echo("<title>$header</title>");
+    echo("</head><body>");
+    echo("<h1>$header</h1>");
+    echo("<p>$message</p>");
+    echo("<hr>");
+    echo("<address>ddnss 0.1</address>");
+    echo("</body></html>");
+  }
+
 ?>

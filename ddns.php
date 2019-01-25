@@ -6,6 +6,12 @@
 	{
 		ProcessData($_REQUEST);
 	}
+	else
+	{
+		response("No HTTPS", "You must connect via HTTPS!");
+		
+		return false;
+	}
 		
 	function verify_zone($data)
 	{
@@ -15,7 +21,7 @@
 		}
 		else
 		{
-			echo 'You must supply a valid zone to update.';
+			response("No valid zone", "You must supply a valid zone to update.");
 			
 			return false; 
 		}
@@ -29,7 +35,7 @@
 		}
 		else
 		{
-			echo 'You must supply a valid MAC address e.g. 00:0b:96:d0:23:92';
+			response("No valid MAC address", "You must supply a valid MAC address e.g. 00:0b:96:d0:23:92.");
 			
 			return false; 
 		}
@@ -43,7 +49,7 @@
 		}
 		else
 		{
-			echo 'You must either enter a valid IP address or leave that field blank.';
+			response("No valid IP address", "You must either enter a valid IP address or leave that field blank.");
 			
 			return false;
 		}

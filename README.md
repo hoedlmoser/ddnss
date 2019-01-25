@@ -1,35 +1,40 @@
-This is ridiculously long, so it's split up across multiple posts.
+# ddnss - How to be your own Dynamic DNS provider
+
+simple dyndns server
+
+all credits for the [initial version](https://www.knownhost.com/forums/threads/how-to-be-your-own-dynamic-dns-provider.925/) go to [khiltd](http://khiltd.com/).
 
 You might not have a static IP at home or on the road, but your VPS does, and it can allow the rest of the net to find you wherever you are or however you're connected without having to give companies like DynDNS a single dime. Some basic BIND configuration can allow you to access files at home, VNC into grandma's laptop to fix her printer while she's at Starbucks, run a webserver against your ISP's wishes, and even setup a delegate nameserver to logically bridge physically disparate networks together. 
 
 The first thing you have to do is setup BIND. In your named.conf file (or in a separate file included from named.conf), define a new zone to handle your dynamic updates. This is necessary because once you enable dynamic updates, that zone's zone file will be mangled to the point that it will no longer be readable by humans or hosting control panels. A sample configuration might look like this:
 
-Code:
-zone "ddns.mydomain.com" 
-{
-	type master;
-	file "/var/named/ddns.mydomain.com.db";
-	update-policy { grant [B]*.ddns.mydomain.com.[/B] self ddns.mydomain.com. A; };
-};
+    zone "ddns.mydomain.com" 
+    {
+    	type master;
+    	file "/var/named/ddns.mydomain.com.db";
+    	update-policy { grant [B]*.ddns.mydomain.com.[/B] self ddns.mydomain.com. A; };
+    };
+
 This is not the ONLY way to configure this, but it makes the most sense for the purposes of this howto. We're essentially telling BIND that we want to allow anyone who has a valid key to update their own A record to point to a new IP. What makes a valid key? That's the next step.
 
 There are several ways to make what BIND refers to as a TSIG key, but it's basically just an MD5'ed and Base64 encoded string we've told it to look out for. I like to base my TSIG keys on the MAC address of the client machine's primary NIC, so I generate my keys from the shell thusly:
 
-Code:
-echo 00:0b:92:d0:27:92 | openssl md5 | openssl base64
+    echo 00:0b:92:d0:27:92 | openssl md5 | openssl base64
+
 That gives us
-Code:
-YmM1YWQ0ZTQyNjhjZTRhMjE2ZTZmZDMwNDY1ZjgyMTMK
+
+    YmM1YWQ0ZTQyNjhjZTRhMjE2ZTZmZDMwNDY1ZjgyMTMK
+
 in return, so now we just have to tell BIND about it.
 
 Back in your named.conf file (or another file included from named.conf) define a key as follows:
 
-Code:
-key [B]peppep.ddns.mydomain.com.[/B]
-{
-	algorithm hmac-md5;
-	secret "YmM1YWQ0ZTQyNjhjZTRhMjE2ZTZmZDMwNDY1ZjgyMTMK";
-};
+    key [B]peppep.ddns.mydomain.com.[/B]
+    {
+    	algorithm hmac-md5;
+    	secret "YmM1YWQ0ZTQyNjhjZTRhMjE2ZTZmZDMwNDY1ZjgyMTMK";
+    };
+
 The important parts of this declaration are the key name and the "secret." The "secret" is obviously the key we just generated through openssl above, but they key name needs a little explanation. 
 
 Back when we specified our update-policy, we told BIND to grant update permissions to a certain zone so long as the name of the user's key matched the zone being updated. In simpler terms, the name you give your key MUST match the pattern specified in the update-policy, in this case *.ddns.mydomain.com. So now, peppep.ddns.mydomain.com can alter its own A record all it likes so long as he provides the right key, but he will not be able to touch nana.ddns.mydomain.com's records no matter what. This is as it should be. 
@@ -62,8 +67,8 @@ An example of an extremely simple pseudo-form which utilizes this code is as fol
 
 You would tell your router to trigger that by providing a simple URL containing all of the requisite information, e.g.:
 
-Code:
-https://www.mydomain.com/ddns.php?zone=nana.ddns.mydomain.com&key=00:0b:96:d0:23:92&ip=192.168.1.1
+    https://www.mydomain.com/ddns.php?zone=nana.ddns.mydomain.com&key=00:0b:96:d0:23:92&ip=192.168.1.1
+
 And from that point forward, nana.ddns.mydomain.com will resolve to 192.168.1.1. When your ISP gives you a new IP, your router will just update it again.
 
 Alternatively, if your router doesn't support custom DDNS services, you can setup a cron job to request it periodically through curl, or build an actual HTML form where users can fill out the fields themselves.

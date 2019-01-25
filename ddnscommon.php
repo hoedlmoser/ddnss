@@ -55,12 +55,10 @@
 	*/
 	function khi_ddns_keygen($key)
 	{
-		$tsig	= strtolower($key);
-		
 		//PHP's md5 and base64_encode functions appear to be doing something
 		//differently than OpenSSL's, so if we want them to match, we have to
 		//use OpenSSL's.
-		return exec("echo $tsig | openssl md5 | openssl base64");
+		return exec("echo $tsig | tr [:upper:] [:lower:] | openssl md5 | sed 's/^.*= *//' | openssl base64");
 	}
 	
 	

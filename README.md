@@ -19,7 +19,7 @@ This is not the ONLY way to configure this, but it makes the most sense for the 
 
 There are several ways to make what BIND refers to as a TSIG key, but it's basically just an MD5'ed and Base64 encoded string we've told it to look out for. I like to base my TSIG keys on the MAC address of the client machine's primary NIC, so I generate my keys from the shell thusly:
 
-    echo 00:0b:92:d0:27:92 | openssl md5 | openssl base64
+    echo 00:0b:92:d0:27:92 | tr [:upper:] [:lower:] | openssl md5 | sed 's/^.*= *//' | openssl base64
 
 That gives us
 

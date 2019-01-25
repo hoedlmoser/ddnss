@@ -138,13 +138,18 @@
 		
 		if ( $delete )
 		{
-			$err = khi_ddns_nsupdate("server $nameserver\nkey $zone. $key\nprereq yxrrset $zone. $typeIP\nupdate delete $zone. $typeIP\nsend\n");
-			if ( !empty($err) ) {
-				dd2res("dnserr", "$err");
-				return false;
-			} else {
-				dd2res("good", "", true);
+			if ( empty($currentIP) ) {
+				dd2res("nochg", "", true);
 				return true;
+			} else {
+				$err = khi_ddns_nsupdate("server $nameserver\nkey $zone. $key\nprereq yxrrset $zone. $typeIP\nupdate delete $zone. $typeIP\nsend\n");
+				if ( !empty($err) ) {
+					dd2res("dnserr", "$err");
+					return false;
+				} else {
+					dd2res("good", "", true);
+					return true;
+				}
 			}
 		}
 		elseif ( $ip != $currentIP )

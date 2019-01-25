@@ -1,5 +1,6 @@
 <?php
 	
+	require_once("config.php");
 	require_once("ddnscommon.php");
 	
 	if ( ($_SERVER['HTTPS'] === 'on') || ($_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') )
@@ -15,7 +16,7 @@
 		
 	function verify_zone($data)
 	{
-		if ( preg_match('/.*\.ddns\.mydomain\.com/', $data) )
+		if ( preg_match("/$cfg['zones']/", $data) )
 		{
 			return true;
 		}

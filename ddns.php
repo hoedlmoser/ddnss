@@ -2,7 +2,7 @@
 	
 	require_once("ddnscommon.php");
 	
-	if ( $_SERVER['HTTPS'] === 'on' )
+	if ( ($_SERVER['HTTPS'] === 'on') || ($_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') )
 	{
 		ProcessData($_REQUEST);
 	}

@@ -140,7 +140,7 @@
 				
 				if ( !empty($err) )
 				{						
-					response("Error", "$err");
+					dd2res("dnserr", "$err");
 					
 					return false; 
 				}
@@ -151,16 +151,16 @@
 			
 			if ( !empty($err) )
 			{						
-				response("Error", "$err");
+				dd2res("dnserr", "$err");
 				
 				return false; 
 			}			
 			
-			response("Success", "$zone has been set to $ip.", true);
+			dd2res("good", "$ip", true);
 		}
 		else
 		{
-			response("Success", "$zone is already set to $ip.", true);
+			dd2res("nochg", "$ip", true);
 			
 			return false;
 		}
@@ -169,20 +169,19 @@
 	}
 
 
-  function response($header, $message, $success = null)
-  {
-    if ( empty($success) )
-    {
-      header("HTTP/1.0 400 Bad Request");
-    }
-    echo("<html><head>");
-    echo("<title>$header</title>");
-    echo("</head><body>");
-    echo("<h1>$header</h1>");
-    echo("<p>$message</p>");
-    echo("<hr>");
-    echo("<address>ddnss 0.1</address>");
-    echo("</body></html>");
-  }
+	function dd2res($result, $message, $success = null) {
+		$message = trim(preg_replace('/\s+/', ' ', $message));
+		if ( preg_match('/TSIG error with server.*NOTAUTH\(BADKEY\)/', $message) ) {
+			$result = 'badauth';
+		}
+		if ( empty($success) ) {
+			header("HTTP/1.0 400 Bad Request");
+		}
+		echo("<html><head>");
+		echo("<title>$result</title>");
+		echo("</head><body>");
+		echo("$result $message");
+		echo("</body></html>");
+	}
 
 ?>

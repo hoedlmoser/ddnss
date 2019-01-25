@@ -103,6 +103,7 @@
 		$zone		= escapeshellcmd(strtolower(@$data['zone']));
 		$key		= escapeshellcmd(@$data['key']);
 		$ip			= escapeshellcmd(@$data['ip']);
+		$delete	= isset($data['delete']);
 		
 		//If a keygen callback was provided, then pass it the 
 		//key for further processing. Otherwise we assume
@@ -135,7 +136,18 @@
 		//with any of this. 
 		$currentIP	= exec("dig @$nameserver $zone $typeIP +short");
 		
-		if ( $ip != $currentIP )
+		if ( $delete )
+		{
+			$err = khi_ddns_nsupdate("server $nameserver\nkey $zone. $key\nprereq yxrrset $zone. $typeIP\nupdate delete $zone. $typeIP\nsend\n");
+			if ( !empty($err) ) {
+				dd2res("dnserr", "$err");
+				return false;
+			} else {
+				dd2res("good", "", true);
+				return true;
+			}
+		}
+		elseif ( $ip != $currentIP )
 		{
 			//Ideally we'd execute both of these nsupdate sequences in one fell swoop,
 			//but PHP just won't keep the pipes open long enough for that to work.

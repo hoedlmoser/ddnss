@@ -78,12 +78,20 @@
 					key:	The TSIG key 
 					
 					ip:		The IP address for the A record you wish to update (optional)
+
+					delete:	if supplied the RR will get deleted (optional)
 					
 					If the 'ip' key is not supplied, then the IP the HTTP request
 					originated from will be assumed to be correct. Proxy servers
 					and NAT routers can make this an unsafe assumption, so if
 					you want accuracy, supply a valid IP in this array element. 
 					
+					the delete key removes the A or AAAA record in DNS instead of 
+					updating it. While the update would actually use the given IP 
+					address to put it into an A or AAAA record, the delete uses it
+					only to determine the address type, whether it is IPv4 or v6 
+					and then deletes the A or AAAA record.
+
 					If you pass a valid function pointer in the $keygen parameter
 					then whatever value is provided in the 'key' element will be 
 					mutated by this function. If you do not supply a valid function 

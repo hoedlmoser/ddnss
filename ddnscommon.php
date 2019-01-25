@@ -169,7 +169,7 @@
 	}
 
 
-  function response($header, $message, $success)
+  function response($header, $message, $success = null)
   {
     if ( empty($success) )
     {

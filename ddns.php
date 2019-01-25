@@ -16,7 +16,7 @@
 		
 	function verify_zone($data)
 	{
-		if ( preg_match("/$cfg['zones']/", $data) )
+		if ( preg_match('/' . $GLOBALS['cfg']['zones'] . '/', $data) )
 		{
 			return true;
 		}

@@ -138,7 +138,7 @@
 		//Figure out what nameserver we should be talking to for this zone
 		//by checking the SOA record. If this server is not configured to 
 		//allow dynamic updates on this zone, then nothing's going to happen.
-		$nameserver = preg_replace('/\.$/', '', exec("dig -t NS -q " . preg_replace('/^[^\.]+\./', '', $zone, 1) . " +noadditional | awk '/^[^;]/ { print $5; } ' "));
+		$nameserver = preg_replace('/\.$/', '', exec("dig -t SOA -q " . preg_replace('/^[^\.]+\./', '', $zone, 1) . " +noadditional +noauthority | awk '/^[^;]/ && $4 == \"SOA\" { print $5; }'"));
 		
 		//Check to see if we actually need to bother BIND
 		//with any of this. 

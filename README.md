@@ -12,7 +12,7 @@ The first thing you have to do is setup BIND. In your named.conf file (or in a s
     {
     	type master;
     	file "/var/named/ddns.mydomain.com.db";
-    	update-policy { grant *.ddns.mydomain.com. self ddns.mydomain.com. A; };
+    	update-policy { grant *.ddns.mydomain.com. self ddns.mydomain.com. A AAAA; };
     };
 
 This is not the ONLY way to configure this, but it makes the most sense for the purposes of this howto. We're essentially telling BIND that we want to allow anyone who has a valid key to update their own A record to point to a new IP. What makes a valid key? That's the next step.

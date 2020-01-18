@@ -78,12 +78,20 @@
 					key:	The TSIG key 
 					
 					ip:		The IP address for the A record you wish to update (optional)
+
+					delete:	if supplied the RR will get deleted (optional)
 					
 					If the 'ip' key is not supplied, then the IP the HTTP request
 					originated from will be assumed to be correct. Proxy servers
 					and NAT routers can make this an unsafe assumption, so if
 					you want accuracy, supply a valid IP in this array element. 
 					
+					the delete key removes the A or AAAA record in DNS instead of 
+					updating it. While the update would actually use the given IP 
+					address to put it into an A or AAAA record, the delete uses it
+					only to determine the address type, whether it is IPv4 or v6 
+					and then deletes the A or AAAA record.
+
 					If you pass a valid function pointer in the $keygen parameter
 					then whatever value is provided in the 'key' element will be 
 					mutated by this function. If you do not supply a valid function 
@@ -103,6 +111,7 @@
 		$zone		= escapeshellcmd(strtolower(@$data['zone']));
 		$key		= escapeshellcmd(@$data['key']);
 		$ip			= escapeshellcmd(@$data['ip']);
+		$delete	= isset($data['delete']);
 		
 		//If a keygen callback was provided, then pass it the 
 		//key for further processing. Otherwise we assume
@@ -119,16 +128,39 @@
 			$ip = $_SERVER['REMOTE_ADDR'];
 		}
 		
+		// what is the type of the IP address, A/IPv4 or AAAA/IPv6?
+		if ( preg_match('/(\d{1,3}\.){3}\d{1,3}/', $ip) ) {
+			$typeIP = 'A';
+		} else {
+			$typeIP = 'AAAA';
+		}
+
 		//Figure out what nameserver we should be talking to for this zone
 		//by checking the SOA record. If this server is not configured to 
 		//allow dynamic updates on this zone, then nothing's going to happen.
-		$nameserver = preg_replace('/\.$/', '', exec("dig -t SOA " . preg_replace('/^[^\.]+\./', '', $zone, 1) . " | awk '/^[^;]/ { print $5; } ' "));
+		$nameserver = preg_replace('/\.$/', '', exec("dig -t SOA -q " . preg_replace('/^[^\.]+\./', '', $zone, 1) . " +noadditional +noauthority | awk '/^[^;]/ && $4 == \"SOA\" { print $5; }'"));
 		
 		//Check to see if we actually need to bother BIND
 		//with any of this. 
-		$currentIP	= exec("dig @$nameserver $zone A +short");
+		$currentIP	= exec("dig @$nameserver $zone $typeIP +short");
 		
-		if ( $ip != $currentIP )
+		if ( $delete )
+		{
+			if ( empty($currentIP) ) {
+				dd2res("nochg", "", true);
+				return true;
+			} else {
+				$err = khi_ddns_nsupdate("server $nameserver\nkey $zone. $key\nprereq yxrrset $zone. $typeIP\nupdate delete $zone. $typeIP\nsend\n");
+				if ( !empty($err) ) {
+					dd2res("dnserr", "$err");
+					return false;
+				} else {
+					dd2res("good", "", true);
+					return true;
+				}
+			}
+		}
+		elseif ( $ip != $currentIP )
 		{
 			//Ideally we'd execute both of these nsupdate sequences in one fell swoop,
 			//but PHP just won't keep the pipes open long enough for that to work.
@@ -136,7 +168,7 @@
 			//Remove the old record if it exists
 			if ( !empty($currentIP) )
 			{
-				$err = khi_ddns_nsupdate("server $nameserver\nkey $zone. $key\nprereq yxdomain $zone.\nupdate delete $zone. A\nsend\n");
+				$err = khi_ddns_nsupdate("server $nameserver\nkey $zone. $key\nprereq yxrrset $zone. $typeIP\nupdate delete $zone. $typeIP\nsend\n");
 				
 				if ( !empty($err) )
 				{						
@@ -147,7 +179,7 @@
 			}
 			
 			//Then add the new record as long as another one doesn't already exist
-			$err = khi_ddns_nsupdate("server $nameserver\nkey $zone. $key\nprereq nxdomain $zone.\nupdate add $zone. 60 A $ip\nsend\n");
+			$err = khi_ddns_nsupdate("server $nameserver\nkey $zone. $key\nprereq nxrrset $zone. $typeIP\nupdate add $zone. " . $GLOBALS['cfg']['ttl'] . " $typeIP $ip\nsend\n");
 			
 			if ( !empty($err) )
 			{						
@@ -177,11 +209,7 @@
 		if ( empty($success) ) {
 			header("HTTP/1.0 400 Bad Request");
 		}
-		echo("<html><head>");
-		echo("<title>$result</title>");
-		echo("</head><body>");
 		echo("$result $message");
-		echo("</body></html>");
 	}
 
 ?>
